@@ -1,0 +1,30 @@
+.red {
+  color: tomato;
+}
+
+.marked {
+  position: relative;
+}
+
+.marked:after:hover {
+  content: "Обязательное поле!";
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: block;
+
+  color: tomato;
+}
+
+.disabled-btn {
+  cursor: auto !important;
+}
+
+.form-control {
+  border: 0 !important;
+}
+
+::placeholder {
+  color: darkgray !important;
+}
