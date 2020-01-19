@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import validator from "email-validator";
-import { telephoneReg, seriesReg, numberReg } from "../../regex/regex";
 import MaskedInput from "react-text-mask";
 import { withRouter, Link } from "react-router-dom";
 
@@ -10,66 +8,128 @@ var db = firebase.firestore();
 
 class Form extends Component {
   state = {
-    firstName: "",
-    secondName: "",
-    middleName: "",
-    series: null,
-    number: null,
-    email: "",
-    telephone: ""
+    videoMemory: null,
+    title: "",
+    chipset: "",
+    article: null,
+    formFactor: "",
+    price: null,
+    type: this.props.match.params.type,
+    cores: null,
+    frequency: null
   };
 
-  addPerson = () => {
-    db.collection("users")
-      .add({
-        firstName: this.state.firstName,
-        secondName: this.state.secondName,
-        middleName: this.state.middleName,
-        series: this.state.series,
-        number: this.state.number,
-        email: this.state.email,
-        telephone: this.state.telephone
-      })
-      .then(function(docRef) {
-        console.log("Document written with ID: ", docRef.id);
-      })
-      .catch(function(error) {
-        console.error("Error adding document: ", error);
+  addItem = () => {
+    if (this.props.match.params.type === "motherboards") {
+      db.collection(`${this.props.match.params.type}`).add({
+        price: this.state.price,
+        article: this.state.article,
+        formFactor: this.state.formFactor,
+        title: this.state.title,
+        chipset: this.state.chipset,
+        date: Date.now()
       });
+    } else if (this.props.match.params.type === "processors") {
+      db.collection(`${this.props.match.params.type}`).add({
+        price: this.state.price,
+        article: this.state.article,
+        cores: this.state.cores,
+        title: this.state.title,
+        frequency: this.state.frequency,
+        chipset: this.state.chipset,
+        date: Date.now()
+      });
+    } else if (this.props.match.params.type === "videoCards") {
+      db.collection(`${this.props.match.params.type}`).add({
+        price: this.state.price,
+        article: this.state.article,
+        videoMemory: this.state.videoMemory,
+        title: this.state.title,
+        date: Date.now()
+      });
+    }
   };
 
-  changePerson = () => {
-    db.collection("users")
+  updateItem = () => {
+    if (this.props.match.params.type === "motherboards") {
+      db.collection(`${this.props.match.params.type}`)
+        .doc(`${this.props.match.params.id}`)
+        .update({
+          price: this.state.price,
+          article: this.state.article,
+          formFactor: this.state.formFactor,
+          title: this.state.title,
+          chipset: this.state.chipset,
+          date: Date.now()
+        });
+    } else if (this.props.match.params.type === "processors") {
+      db.collection(`${this.props.match.params.type}`)
+        .doc(`${this.props.match.params.id}`)
+        .update({
+          price: this.state.price,
+          article: this.state.article,
+          cores: this.state.cores,
+          title: this.state.title,
+          frequency: this.state.frequency,
+          chipset: this.state.chipset,
+          date: Date.now()
+        });
+    } else if (this.props.match.params.type === "videoCards") {
+      db.collection(`${this.props.match.params.type}`)
+        .doc(`${this.props.match.params.id}`)
+        .update({
+          price: this.state.price,
+          article: this.state.article,
+          videoMemory: this.state.videoMemory,
+          title: this.state.title,
+          date: Date.now()
+        });
+    }
+  };
+
+  deleteItem = () => {
+    db.collection(`${this.props.match.params.type}`)
       .doc(`${this.props.match.params.id}`)
-      .update({
-        firstName: this.state.firstName,
-        secondName: this.state.secondName,
-        middleName: this.state.middleName,
-        series: this.state.series,
-        number: this.state.number,
-        email: this.state.email,
-        telephone: this.state.telephone
-      });
+      .delete();
   };
 
   isDisabled = () => {
-    return (
-      validator.validate(this.state.email) &&
-      this.state.telephone.match(telephoneReg) &&
-      this.state.series.match(seriesReg) &&
-      this.state.number.match(numberReg) &&
-      this.state.firstName &&
-      this.state.secondName
-    );
+    if (this.props.match.params.type === "motherboards") {
+      return (
+        this.state.price &&
+        this.state.article &&
+        this.state.formFactor &&
+        this.state.title &&
+        this.state.chipset
+      );
+    } else if (this.props.match.params.type === "processors") {
+      return (
+        this.state.price &&
+        this.state.article &&
+        this.state.cores &&
+        this.state.title &&
+        this.state.frequency &&
+        this.state.chipset
+      );
+    } else if (this.props.match.params.type === "videoCards") {
+      return (
+        this.state.price &&
+        this.state.article &&
+        this.state.videoMemory &&
+        this.state.title
+      );
+    }
   };
 
   onChangeInput = e => {
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value }, () => {
+      console.log(this.state);
+    });
   };
 
-  async componentDidMount() {
+  componentDidMount() {
     if (this.props.mode === "edit") {
-      db.collection("users")
+      db.collection(`${this.props.match.params.type}`)
         .doc(this.props.match.params.id)
         .get()
         .then(doc => {
@@ -77,30 +137,9 @@ class Form extends Component {
             this.setState({
               ...doc.data()
             });
-          } else {
-            console.log("No such document!");
           }
-        })
-        .catch(function(error) {
-          console.log("Error getting document:", error);
         });
     }
-  }
-
-  clearInputs = () => {
-    this.setState({
-      firstName: "",
-      secondName: "",
-      middleName: "",
-      series: null,
-      number: null,
-      email: "",
-      telephone: ""
-    });
-  };
-
-  componentWillUnmount() {
-    this.clearInputs();
   }
 
   render() {
@@ -109,162 +148,216 @@ class Form extends Component {
     return (
       <div className="w-75 mx-auto pt-4">
         <div className="form-group row">
-          <label htmlFor="inputFirstName" className="col-sm-2 col-form-label">
-            Имя<span className="red">*</span>
+          <label htmlFor="inputTitle" className="col-sm-2 col-form-label">
+            Название<span className="red">*</span>
           </label>
           <div className="col-sm-10">
             <input
               type="text"
               className="form-control bg-secondary text-light"
-              id="inputFirstName"
-              placeholder="Введите имя"
-              value={this.state.firstName}
-              name="firstName"
+              id="inputTitle"
+              placeholder="Название продукта"
+              value={this.state.title}
+              name="title"
               onChange={this.onChangeInput}
             />
           </div>
         </div>
-        <div className="form-group row">
-          <label htmlFor="inputSecondName" className="col-sm-2 col-form-label">
-            Фамилия<span className="red">*</span>
-          </label>
-          <div className="col-sm-10">
-            <input
-              type="text"
-              className="form-control bg-secondary text-light"
-              id="inputSecondName"
-              placeholder="Введите фамилию"
-              value={this.state.secondName}
-              name="secondName"
-              onChange={this.onChangeInput}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label htmlFor="inputMiddleName" className="col-sm-2 col-form-label">
-            Отчество
-          </label>
-          <div className="col-sm-10">
-            <input
-              type="text"
-              className="form-control bg-secondary text-light"
-              id="inputMiddleName"
-              placeholder="Введите отчество"
-              value={this.state.middleName}
-              name="middleName"
-              onChange={this.onChangeInput}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label className="col-sm-2 col-form-label">
-            Паспорт<span className="red">*</span>
-          </label>
-          <div className="col-sm-10">
-            <label htmlFor="inputSeries" className="col-sm-2 col-form-label">
-              Серия<span className="red">*</span>
+
+        {this.props.match.params.type === "motherboards" ||
+        this.props.match.params.type === "processors" ? (
+          <div className="form-group row">
+            <label htmlFor="inputChipset" className="col-sm-2 col-form-label">
+              Чипсет<span className="red">*</span>
             </label>
-            <MaskedInput
-              mask={[/\d/, /\d/, /\d/, /\d/]}
-              guide={true}
-              keepCharPositions={true}
-              className="form-control bg-secondary text-light "
-              id="inputSeries"
-              placeholder="0000"
-              value={this.state.series}
-              name="series"
-              onChange={this.onChangeInput}
-            />
-            <label htmlFor="inputNumber" className="col-sm-2 col-form-label">
-              Номер<span className="red">*</span>
-            </label>
-            <MaskedInput
-              mask={[/\d/, /\d/, /\d/, /\d/, /\d/, /\d/]}
-              guide={true}
-              keepCharPositions={true}
-              className="form-control bg-secondary text-light"
-              id="inputNumber"
-              placeholder="000000"
-              value={this.state.number}
-              name="number"
-              onChange={this.onChangeInput}
-            />
+            <div className="col-sm-10">
+              <input
+                type="text"
+                className="form-control bg-secondary text-light"
+                id="inputChipset"
+                placeholder="Чипсет"
+                value={this.state.chipset}
+                name="chipset"
+                onChange={this.onChangeInput}
+              />
+            </div>
           </div>
-        </div>
+        ) : null}
+
         <div className="form-group row">
-          <label htmlFor="inputEmail" className="col-sm-2 col-form-label">
-            Email<span className="red">*</span>
-          </label>
-          <div className="col-sm-10">
-            <input
-              type="email"
-              className="form-control bg-secondary text-light"
-              id="inputEmail"
-              placeholder="example@mail.com"
-              value={this.state.email}
-              name="email"
-              onChange={this.onChangeInput}
-            />
-          </div>
-        </div>
-        <div className="form-group row">
-          <label htmlFor="inputTelephone" className="col-sm-2 col-form-label">
-            Телефон<span className="red">*</span>
+          <label htmlFor="inputArticle" className="col-sm-2 col-form-label">
+            Артикул<span className="red">*</span>
           </label>
           <div className="col-sm-10">
             <MaskedInput
               mask={[
-                "+",
-                /[7]/,
-                "(",
-                /[1-9]/,
-                /\d/,
-                /\d/,
-                ")",
                 /\d/,
                 /\d/,
                 /\d/,
-                "-",
                 /\d/,
                 /\d/,
-                "-",
+                /\d/,
+                /\d/,
+                /\d/,
                 /\d/,
                 /\d/
               ]}
-              guide={true}
-              keepCharPositions={true}
-              className="form-control bg-secondary text-light"
-              id="inputTelephone"
-              placeholder="+7(999)999-99-99"
-              value={this.state.telephone}
-              name="telephone"
+              className="form-control bg-secondary text-light "
+              id="inputArticle"
+              placeholder="000000000"
+              value={this.state.article}
+              name="article"
               onChange={this.onChangeInput}
             />
           </div>
         </div>
-        {this.props.mode === "edit" ? (
-          disabled ? (
-            <button className="disabled btn btn-primary" disabled>
-              Сохранить
+
+        {this.props.match.params.type === "motherboards" ? (
+          <div className="form-group row">
+            <label
+              htmlFor="inputFormFactor"
+              className="col-sm-2 col-form-label"
+            >
+              Форм-фактор<span className="red">*</span>
+            </label>
+            <div className="col-sm-10">
+              <input
+                className="form-control bg-secondary text-light"
+                id="inputFormFactor"
+                placeholder="Форм-фактор"
+                value={this.state.formFactor}
+                name="formFactor"
+                onChange={this.onChangeInput}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {this.props.match.params.type === "processors" ? (
+          <>
+            <div className="form-group row">
+              <label htmlFor="inputCores" className="col-sm-2 col-form-label">
+                Количество ядер<span className="red">*</span>
+              </label>
+              <div className="col-sm-10">
+                <input
+                  type="number"
+                  className="form-control bg-secondary text-light"
+                  id="inputCores"
+                  placeholder="Количество ядер"
+                  value={this.state.cores}
+                  name="cores"
+                  onChange={this.onChangeInput}
+                />
+              </div>
+            </div>
+            <div className="form-group row">
+              <label
+                htmlFor="inputFrequency"
+                className="col-sm-2 col-form-label"
+              >
+                Частота<span className="red">*</span>
+              </label>
+              <div className="col-sm-10">
+                <input
+                  className="form-control bg-secondary text-light"
+                  id="inputFrequency"
+                  placeholder="Частота"
+                  value={this.state.frequency}
+                  name="frequency"
+                  onChange={this.onChangeInput}
+                />
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {this.props.match.params.type === "videoCards" ? (
+          <div className="form-group row">
+            <label
+              htmlFor="inputVideoMemory"
+              className="col-sm-2 col-form-label"
+            >
+              Объем памяти видеокарты<span className="red">*</span>
+            </label>
+            <div className="col-sm-10">
+              <input
+                type="number"
+                className="form-control bg-secondary text-light"
+                id="inputVideoMemory"
+                placeholder="Oбъем памяти видеокарты"
+                value={this.state.videoMemory}
+                name="videoMemory"
+                onChange={this.onChangeInput}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="form-group row">
+          <label htmlFor="inputPrice" className="col-sm-2 col-form-label">
+            Цена<span className="red">*</span>
+          </label>
+          <div className="col-sm-10">
+            <input
+              type="number"
+              className="form-control bg-secondary text-light"
+              id="inputPrice"
+              placeholder="цена в рублях"
+              value={this.state.price}
+              name="price"
+              onChange={this.onChangeInput}
+            />
+          </div>
+        </div>
+
+        <>
+          {this.props.mode === "edit" ? (
+            disabled ? (
+              <>
+                <button className="disabled btn btn-primary" disabled>
+                  Сохранить
+                </button>
+                <Link
+                  to={`/${this.props.match.params.type}`}
+                  className="btn btn-danger"
+                  onClick={this.deleteItem}
+                >
+                  Удалить
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to={`/${this.props.match.params.type}`}
+                  className="btn btn-primary"
+                  onClick={this.updateItem}
+                >
+                  Сохранить
+                </Link>
+                <Link
+                  to={`/${this.props.match.params.type}`}
+                  className="btn btn-danger"
+                  onClick={this.deleteItem}
+                >
+                  Удалить
+                </Link>
+              </>
+            )
+          ) : disabled ? (
+            <button className="disabled disabled-btn btn btn-primary" disabled>
+              Добавить
             </button>
           ) : (
             <Link
-              to="/"
+              to={`/${this.props.match.params.type}`}
               className="btn btn-primary"
-              onClick={this.changePerson}
+              onClick={this.addItem}
             >
-              Сохранить
+              Добавить
             </Link>
-          )
-        ) : disabled ? (
-          <button className="disabled disabled-btn btn btn-primary" disabled>
-            Добавить
-          </button>
-        ) : (
-          <Link to="/" className="btn btn-primary" onClick={this.addPerson}>
-            Добавить
-          </Link>
-        )}
+          )}
+        </>
       </div>
     );
   }

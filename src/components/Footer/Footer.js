@@ -5,9 +5,9 @@ export default class Footer extends Component {
     return (
       <div className="bg-dark text-center mt-4">
         <p>
-          Created By <a href="https://github.com/drmrhdt">Drmrhdt</a>
+          Создано <a href="https://github.com/drmrhdt">popova182-Drmrhdt</a>
         </p>
-        <a href="https://github.com/drmrhdt">My GITHUB</a>
+        <a href="https://github.com/drmrhdt">Мой GITHUB</a>
       </div>
     );
   }

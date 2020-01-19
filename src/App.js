@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import Header from "./components/Header";
-import UsersTable from "./components/UsersTable";
+import Table from "./components/Table";
 import Form from "./components/Form";
 import Footer from "./components/Footer";
+import Main from "./components/Main";
 import "./App.css";
 
 class App extends Component {
@@ -14,9 +15,10 @@ class App extends Component {
           <div className="container">
             <Header />
             <Switch>
-              <Route exact path="/" component={UsersTable} />
-              <Route path="/add" component={Form} />
-              <Route path="/edit/:id">
+              <Route exact path="/main" component={Main} />
+              <Route exact path="/:type" component={Table} />
+              <Route path="/:type/add" component={Form} />
+              <Route path="/:type/edit/:id">
                 <Form mode="edit" />
               </Route>
             </Switch>
